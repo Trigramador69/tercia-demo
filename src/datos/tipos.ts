@@ -159,12 +159,16 @@ export type EstadoPostulacion =
   | "contratado"
   | "descartado";
 
+// "invitacion": Recursos Humanos la sumó desde la base de postulantes.
+export type OrigenPostulacion = "postulacion" | "invitacion";
+
 export interface Postulacion {
   id: string;
   idPostulante: string;
   idConvocatoria: string;
   fecha: string;
   estado: EstadoPostulacion;
+  origen: OrigenPostulacion;
 }
 
 // --- Asistencia ---

@@ -115,12 +115,13 @@ export function VistaInicio() {
               }).length;
               const cliente = convocatoria.idCliente ? clientePorId.get(convocatoria.idCliente) : undefined;
               return (
-                <div
+                <Link
                   key={convocatoria.id}
-                  className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                  href={puedeVerRuta(rol, "/convocatorias") ? `/convocatorias/${convocatoria.id}` : "/"}
+                  className="group/fila flex flex-col gap-2 py-3 outline-none first:pt-0 last:pb-0 focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium sm:truncate">{convocatoria.titulo}</p>
+                    <p className="text-sm font-medium group-hover/fila:underline sm:truncate">{convocatoria.titulo}</p>
                     <p className="truncate text-xs text-muted-foreground">
                       {cliente?.nombre ?? "Uso interno"} · {pluralizar(convocatoria.cantidadPuestos, "puesto", "puestos")}
                     </p>
@@ -129,7 +130,7 @@ export function VistaInicio() {
                     <Badge variant="secondary">{pluralizar(postulaciones.length, "postulante", "postulantes")}</Badge>
                     <Badge className="bg-exito-suave text-exito">{aptos} cumplen</Badge>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </CardContent>

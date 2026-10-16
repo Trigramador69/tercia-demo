@@ -1,10 +1,15 @@
 import type {
   Asignacion,
+  Convocatoria,
   EstadoDemo,
+  Postulacion,
+  Postulante,
   Puesto,
+  RequisitosConvocatoria,
   Sucursal,
   Turno,
 } from "@/datos/tipos";
+import { calcularCumplimiento } from "@/lib/cumplimiento";
 
 // Consultas derivadas del estado de la demo. Son funciones puras: las pantallas
 // las llaman con el estado actual y React Compiler se encarga de memorizarlas.
@@ -77,6 +82,72 @@ export function coberturaGeneral(estado: EstadoDemo) {
 
 export function postulacionesDeConvocatoria(estado: EstadoDemo, idConvocatoria: string) {
   return estado.postulaciones.filter((postulacion) => postulacion.idConvocatoria === idConvocatoria);
+}
+
+export interface FilaPostulante {
+  postulacion: Postulacion;
+  postulante: Postulante;
+  cumplimiento: number;
+}
+
+// Postulantes de una convocatoria con su porcentaje de cumplimiento.
+export function postulantesDeConvocatoria(estado: EstadoDemo, convocatoria: Convocatoria): FilaPostulante[] {
+  const postulantePorId = new Map(estado.postulantes.map((postulante) => [postulante.id, postulante]));
+  return postulacionesDeConvocatoria(estado, convocatoria.id).flatMap((postulacion) => {
+    const postulante = postulantePorId.get(postulacion.idPostulante);
+    if (!postulante) return [];
+    return [{ postulacion, postulante, cumplimiento: calcularCumplimiento(convocatoria.requisitos, postulante) }];
+  });
+}
+
+// Personas de la base que conviene sugerir para un puesto: postularon antes al
+// mismo puesto o tienen alguna de las habilidades pedidas. Sin este filtro,
+// cualquiera que viva en la ciudad y sea bachiller ya cumpliría la mitad de los
+// requisitos de casi cualquier vacante.
+export function coincidenciasEnLaBase(
+  estado: EstadoDemo,
+  puesto: Puesto,
+  requisitos: RequisitosConvocatoria,
+  umbral: number,
+  excluir: Set<string> = new Set(),
+) {
+  const habilidadesPedidas = new Set(requisitos.habilidades);
+  return estado.postulantes
+    .filter((postulante) => !excluir.has(postulante.id))
+    .filter(
+      (postulante) =>
+        puestosDePostulante(estado, postulante.id).includes(puesto) ||
+        postulante.habilidades.some((habilidad) => habilidadesPedidas.has(habilidad)),
+    )
+    .map((postulante) => ({ postulante, cumplimiento: calcularCumplimiento(requisitos, postulante) }))
+    .filter((item) => item.cumplimiento >= umbral)
+    .sort((a, b) => b.cumplimiento - a.cumplimiento);
+}
+
+// Personas de la base que no están en la convocatoria y cumplen el umbral.
+export function sugeridosDeLaBase(estado: EstadoDemo, convocatoria: Convocatoria, umbral: number) {
+  const yaIncluidos = new Set(
+    postulacionesDeConvocatoria(estado, convocatoria.id).map((postulacion) => postulacion.idPostulante),
+  );
+  return coincidenciasEnLaBase(estado, convocatoria.puesto, convocatoria.requisitos, umbral, yaIncluidos);
+}
+
+// Puestos a los que postuló una persona: es su categoría dentro de la base.
+export function puestosDePostulante(estado: EstadoDemo, idPostulante: string): Puesto[] {
+  const convocatoriaPorId = new Map(estado.convocatorias.map((convocatoria) => [convocatoria.id, convocatoria]));
+  const puestos = estado.postulaciones
+    .filter((postulacion) => postulacion.idPostulante === idPostulante)
+    .map((postulacion) => convocatoriaPorId.get(postulacion.idConvocatoria)?.puesto)
+    .filter((puesto): puesto is Puesto => puesto !== undefined);
+  return Array.from(new Set(puestos));
+}
+
+export function destinoDeConvocatoria(estado: EstadoDemo, convocatoria: Convocatoria) {
+  const cliente = estado.clientes.find((item) => item.id === convocatoria.idCliente);
+  const sucursal = estado.sucursales.find((item) => item.id === convocatoria.idSucursal);
+  if (!cliente) return `Uso interno · ${convocatoria.requisitos.ciudad}`;
+  if (!sucursal) return `${cliente.nombre} · Varias sucursales en ${convocatoria.requisitos.ciudad}`;
+  return `${cliente.nombre} · ${sucursal.nombre}`;
 }
 
 export function nombreDeSucursalConCliente(estado: EstadoDemo, idSucursal: string) {

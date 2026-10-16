@@ -28,6 +28,20 @@ export function formatearNombreMes(mes: string) {
   return new Intl.DateTimeFormat("es-BO", { month: "long", timeZone: "UTC" }).format(aFecha(`${mes}-01`));
 }
 
+// "2024-03-15" -> "mar 2024"
+export function formatearMesCorto(fechaIso: string) {
+  return new Intl.DateTimeFormat("es-BO", { month: "short", year: "numeric", timeZone: "UTC" })
+    .format(aFecha(fechaIso))
+    .replace(".", "");
+}
+
+export function calcularEdad(fechaNacimiento: string, hoy: string = fechaDeHoy()) {
+  const [anioNacimiento, mesNacimiento, diaNacimiento] = fechaNacimiento.split("-").map(Number);
+  const [anio, mes, dia] = hoy.split("-").map(Number);
+  const cumplioEsteAnio = mes > mesNacimiento || (mes === mesNacimiento && dia >= diaNacimiento);
+  return anio - anioNacimiento - (cumplioEsteAnio ? 0 : 1);
+}
+
 export function formatearMonto(monto: number) {
   return `Bs ${formatoMonto.format(monto)}`;
 }

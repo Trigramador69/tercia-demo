@@ -1,5 +1,5 @@
 import { calcularCumplimiento } from "../lib/cumplimiento.ts";
-import type { Aleatorio } from "./aleatorio.ts";
+import { crearAleatorio, type Aleatorio } from "./aleatorio.ts";
 import { fechaReferenciaDemo, habilidadesPorPuesto, turnos } from "./catalogos.ts";
 import { diferenciaEnDias, sumarDias, sumarMeses } from "./fechas.ts";
 import type { CrearIdentidad } from "./identidades.ts";
@@ -112,6 +112,18 @@ const postulacionesCruzadas: [string, string, number][] = [
   ["conv-limpieza-banco-la-paz", "conv-conserje-edificio", 3],
 ];
 
+const semillaHabilidadesAfines = 1605;
+
+// Puestos afines: parte de los postulantes trae también habilidades de estos,
+// y así la base tiene candidatos para reutilizar en otras vacantes.
+const puestosAfines: Record<Puesto, Puesto[]> = {
+  limpieza: ["conserje"],
+  recepcion: ["auxiliar_administrativo"],
+  conserje: ["limpieza", "seguridad"],
+  seguridad: ["conserje"],
+  auxiliar_administrativo: ["recepcion"],
+};
+
 const cargosPorPuesto: Record<Puesto, string[]> = {
   limpieza: ["Personal de limpieza", "Auxiliar de limpieza", "Encargada de limpieza"],
   recepcion: ["Recepcionista", "Atención al cliente", "Cajera"],
@@ -172,6 +184,9 @@ function crearExperiencias(aleatorio: Aleatorio, puesto: Puesto, anios: number):
 export function generarReclutamiento(aleatorio: Aleatorio, crearIdentidad: CrearIdentidad): ReclutamientoGenerado {
   const postulantes: Postulante[] = [];
   const postulaciones: Postulacion[] = [];
+  // Generador aparte para las habilidades afines: así no altera el resto de los
+  // datos generados (y los porcentajes de cumplimiento ya calibrados).
+  const aleatorioAfines = crearAleatorio(semillaHabilidadesAfines);
 
   function fechaDePostulacion(convocatoria: Convocatoria) {
     const limite = convocatoria.fechaCierre < fechaReferenciaDemo ? convocatoria.fechaCierre : fechaReferenciaDemo;
@@ -203,10 +218,19 @@ export function generarReclutamiento(aleatorio: Aleatorio, crearIdentidad: Crear
       : turnos.filter((turno) => !requisitos.turnos.includes(turno)).slice(0, aleatorio.entero(1, 2));
 
     const otrasHabilidades = habilidadesPorPuesto[puesto].filter((habilidad) => !requisitos.habilidades.includes(habilidad));
-    const habilidades = [
-      ...requisitos.habilidades.filter(() => cumple()),
-      ...aleatorio.elegirVarios(otrasHabilidades, aleatorio.entero(0, 2)),
-    ];
+    const habilidadesAfines = aleatorioAfines.probabilidad(0.5)
+      ? aleatorioAfines.elegirVarios(
+          habilidadesPorPuesto[aleatorioAfines.elegir(puestosAfines[puesto])],
+          aleatorioAfines.entero(1, 2),
+        )
+      : [];
+    const habilidades = Array.from(
+      new Set([
+        ...requisitos.habilidades.filter(() => cumple()),
+        ...aleatorio.elegirVarios(otrasHabilidades, aleatorio.entero(0, 2)),
+        ...habilidadesAfines,
+      ]),
+    );
 
     const identidad = crearIdentidad(ciudad, { anioNacimientoMinimo: 1978, anioNacimientoMaximo: 2005 });
     const fechaRegistro = fechaDePostulacion(convocatoria);
@@ -241,6 +265,7 @@ export function generarReclutamiento(aleatorio: Aleatorio, crearIdentidad: Crear
       idConvocatoria: convocatoria.id,
       fecha,
       estado: "nuevo",
+      origen: "postulacion",
     });
   }
 
