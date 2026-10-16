@@ -1,0 +1,268 @@
+import type { Cliente, Sucursal } from "./tipos.ts";
+
+const lunesAViernes = [1, 2, 3, 4, 5];
+const lunesASabado = [1, 2, 3, 4, 5, 6];
+
+export const clientesIniciales: Cliente[] = [
+  {
+    id: "cli-banco-horizonte",
+    nombre: "Banco Horizonte",
+    rubro: "Banca",
+    ciudadPrincipal: "Cochabamba",
+    contactoNombre: "Marcela Antezana",
+    contactoCargo: "Jefa de Servicios Generales",
+    contactoTelefono: "4 452 1180",
+    clienteDesde: "2021-03-01",
+    estado: "activo",
+  },
+  {
+    id: "cli-kantuta",
+    nombre: "Comercializadora Kantuta",
+    rubro: "Comercio mayorista",
+    ciudadPrincipal: "Cochabamba",
+    contactoNombre: "Rolando Céspedes",
+    contactoCargo: "Gerente Administrativo",
+    contactoTelefono: "4 428 3307",
+    clienteDesde: "2022-08-15",
+    estado: "activo",
+  },
+  {
+    id: "cli-clinica-valle-verde",
+    nombre: "Clínica Valle Verde",
+    rubro: "Salud",
+    ciudadPrincipal: "Cochabamba",
+    contactoNombre: "Dra. Carla Montaño",
+    contactoCargo: "Directora Administrativa",
+    contactoTelefono: "4 466 9021",
+    clienteDesde: "2023-02-01",
+    estado: "activo",
+  },
+  {
+    id: "cli-torre-mirador",
+    nombre: "Torre Empresarial Mirador",
+    rubro: "Edificio de oficinas",
+    ciudadPrincipal: "Cochabamba",
+    contactoNombre: "Javier Peredo",
+    contactoCargo: "Administrador del edificio",
+    contactoTelefono: "4 411 7754",
+    clienteDesde: "2024-01-10",
+    estado: "activo",
+  },
+  {
+    id: "cli-hotel-plaza-andina",
+    nombre: "Hotel Plaza Andina",
+    rubro: "Hotelería",
+    ciudadPrincipal: "La Paz",
+    contactoNombre: "Sandra Ugarte",
+    contactoCargo: "Jefa de Personal",
+    contactoTelefono: "2 231 4466",
+    clienteDesde: "2020-05-01",
+    estado: "finalizado",
+  },
+];
+
+export const sucursalesIniciales: Sucursal[] = [
+  // Banco Horizonte: 10 sucursales entre Cochabamba y La Paz.
+  {
+    id: "suc-bh-central",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Oficina Central",
+    ciudad: "Cochabamba",
+    direccion: "Plaza 14 de Septiembre, esq. calle Bolívar",
+    diasLaborales: lunesAViernes,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 2 },
+      { puesto: "seguridad", turno: "completo", cantidad: 1 },
+      { puesto: "recepcion", turno: "completo", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-bh-america",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia América",
+    ciudad: "Cochabamba",
+    direccion: "Av. América 1250",
+    diasLaborales: lunesAViernes,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "seguridad", turno: "completo", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-bh-blanco-galindo",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Blanco Galindo",
+    ciudad: "Cochabamba",
+    direccion: "Av. Blanco Galindo km 2,5",
+    diasLaborales: lunesAViernes,
+    requerimientos: [{ puesto: "limpieza", turno: "manana", cantidad: 1 }],
+  },
+  {
+    id: "suc-bh-quillacollo",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Quillacollo",
+    ciudad: "Cochabamba",
+    direccion: "Calle Héroes del Chaco 310, Quillacollo",
+    diasLaborales: lunesAViernes,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "seguridad", turno: "completo", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-bh-sacaba",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Sacaba",
+    ciudad: "Cochabamba",
+    direccion: "Plaza principal 25 de Mayo, Sacaba",
+    diasLaborales: lunesAViernes,
+    requerimientos: [{ puesto: "limpieza", turno: "manana", cantidad: 1 }],
+  },
+  {
+    id: "suc-bh-cala-cala",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Cala Cala",
+    ciudad: "Cochabamba",
+    direccion: "Av. Libertador Bolívar 1688",
+    diasLaborales: lunesAViernes,
+    requerimientos: [{ puesto: "limpieza", turno: "manana", cantidad: 1 }],
+  },
+  {
+    id: "suc-bh-el-prado",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Regional La Paz, El Prado",
+    ciudad: "La Paz",
+    direccion: "Av. 16 de Julio 1620",
+    diasLaborales: lunesAViernes,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "seguridad", turno: "completo", cantidad: 1 },
+      { puesto: "recepcion", turno: "completo", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-bh-sopocachi",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Sopocachi",
+    ciudad: "La Paz",
+    direccion: "Av. 6 de Agosto 2410",
+    diasLaborales: lunesAViernes,
+    requerimientos: [{ puesto: "limpieza", turno: "manana", cantidad: 1 }],
+  },
+  {
+    id: "suc-bh-miraflores",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Miraflores",
+    ciudad: "La Paz",
+    direccion: "Av. Busch 1180",
+    diasLaborales: lunesAViernes,
+    requerimientos: [{ puesto: "limpieza", turno: "manana", cantidad: 1 }],
+  },
+  {
+    id: "suc-bh-calacoto",
+    idCliente: "cli-banco-horizonte",
+    nombre: "Agencia Calacoto",
+    ciudad: "La Paz",
+    direccion: "Calle 21 de Calacoto 8050",
+    diasLaborales: lunesAViernes,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "seguridad", turno: "completo", cantidad: 1 },
+    ],
+  },
+
+  // Comercializadora Kantuta: 3 sucursales.
+  {
+    id: "suc-kt-oficina",
+    idCliente: "cli-kantuta",
+    nombre: "Oficina y sala de ventas",
+    ciudad: "Cochabamba",
+    direccion: "Av. Ayacucho 455",
+    diasLaborales: lunesASabado,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "recepcion", turno: "completo", cantidad: 1 },
+      { puesto: "auxiliar_administrativo", turno: "completo", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-kt-almacen",
+    idCliente: "cli-kantuta",
+    nombre: "Almacén central",
+    ciudad: "Cochabamba",
+    direccion: "Av. Petrolera km 4",
+    diasLaborales: lunesASabado,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "seguridad", turno: "manana", cantidad: 1 },
+      { puesto: "seguridad", turno: "tarde", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-kt-la-paz",
+    idCliente: "cli-kantuta",
+    nombre: "Sucursal La Paz",
+    ciudad: "La Paz",
+    direccion: "Av. Tejada Sorzano 980, Miraflores",
+    diasLaborales: lunesASabado,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "auxiliar_administrativo", turno: "completo", cantidad: 1 },
+    ],
+  },
+
+  // Clínica Valle Verde: 2 sedes.
+  {
+    id: "suc-cvv-cochabamba",
+    idCliente: "cli-clinica-valle-verde",
+    nombre: "Sede Cochabamba",
+    ciudad: "Cochabamba",
+    direccion: "Av. Salamanca 870",
+    diasLaborales: lunesASabado,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 2 },
+      { puesto: "limpieza", turno: "tarde", cantidad: 1 },
+      { puesto: "recepcion", turno: "manana", cantidad: 1 },
+      { puesto: "recepcion", turno: "tarde", cantidad: 1 },
+    ],
+  },
+  {
+    id: "suc-cvv-la-paz",
+    idCliente: "cli-clinica-valle-verde",
+    nombre: "Consultorios La Paz",
+    ciudad: "La Paz",
+    direccion: "Calle Rosendo Gutiérrez 315, Sopocachi",
+    diasLaborales: lunesASabado,
+    requerimientos: [
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "recepcion", turno: "manana", cantidad: 1 },
+    ],
+  },
+
+  // Torre Empresarial Mirador: un solo edificio.
+  {
+    id: "suc-tm-edificio",
+    idCliente: "cli-torre-mirador",
+    nombre: "Edificio Torre Mirador",
+    ciudad: "Cochabamba",
+    direccion: "Av. Pando 1145",
+    diasLaborales: lunesAViernes,
+    requerimientos: [
+      { puesto: "conserje", turno: "completo", cantidad: 1 },
+      { puesto: "limpieza", turno: "manana", cantidad: 1 },
+      { puesto: "limpieza", turno: "tarde", cantidad: 1 },
+      { puesto: "seguridad", turno: "tarde", cantidad: 1 },
+    ],
+  },
+
+  // Hotel Plaza Andina: cliente anterior, sin requerimientos vigentes.
+  {
+    id: "suc-hpa-hotel",
+    idCliente: "cli-hotel-plaza-andina",
+    nombre: "Hotel Plaza Andina",
+    ciudad: "La Paz",
+    direccion: "Av. Camacho 1377",
+    diasLaborales: [0, 1, 2, 3, 4, 5, 6],
+    requerimientos: [],
+  },
+];
