@@ -17,7 +17,7 @@ type DatosEvaluables = Pick<
 >;
 
 function normalizar(texto: string) {
-  return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 }
 
 // Compara cada requisito de la convocatoria con los datos de la persona.

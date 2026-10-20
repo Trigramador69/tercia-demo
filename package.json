@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generar:ejemplos": "node scripts/generar-reportes-ejemplo.ts"
+    "generar:ejemplos": "node scripts/generar-ejemplos.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

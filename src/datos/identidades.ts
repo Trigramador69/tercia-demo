@@ -26,7 +26,7 @@ const sufijoCarnetPorCiudad: Record<Ciudad, string> = {
 };
 
 function sinAcentos(texto: string) {
-  return texto.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function crearTelefono(aleatorio: Aleatorio) {

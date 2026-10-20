@@ -29,6 +29,10 @@ import { coincidenciasEnLaBase } from "@/lib/demo/consultas";
 import { fechaDeHoy, nombreCompleto } from "@/lib/formato";
 
 const sinCliente = "interno";
+
+function normalizar(texto: string) {
+  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
 const variasSucursales = "varias";
 
 const nombresCiudad: Record<Ciudad, string> = { Cochabamba: "Cochabamba", "La Paz": "La Paz" };
@@ -68,6 +72,8 @@ export function FormularioConvocatoria() {
     puesto: puesto === "",
     turnos: turnosElegidos.length === 0,
     cantidad: !(Number(cantidadPuestos) >= 1),
+    experiencia: Number(experienciaMinima) < 0,
+    cierre: fechaCierre === "" || fechaCierre < fechaDeHoy(),
   };
   const hayErrores = Object.values(errores).some(Boolean);
 
@@ -83,9 +89,13 @@ export function FormularioConvocatoria() {
     : [];
 
   function elegirPuesto(nuevo: Puesto) {
+    // Se quitan las habilidades sugeridas del puesto anterior; las que se
+    // agregaron a mano se conservan.
+    const sugeridasAnteriores = puesto ? habilidadesPorPuesto[puesto] : [];
+    setHabilidades(habilidades.filter((habilidad) => !sugeridasAnteriores.includes(habilidad)));
+    // El título se completa solo mientras no se haya escrito uno propio.
+    if (titulo.trim() === "" || (puesto && titulo === nombresPuesto[puesto])) setTitulo(nombresPuesto[nuevo]);
     setPuesto(nuevo);
-    setHabilidades([]);
-    if (titulo.trim() === "") setTitulo(nombresPuesto[nuevo]);
   }
 
   function elegirCliente(nuevo: string) {
@@ -104,9 +114,12 @@ export function FormularioConvocatoria() {
   }
 
   function agregarHabilidad() {
-    const limpia = habilidadNueva.trim();
+    const limpia = habilidadNueva.trim().replace(/\s+/g, " ");
     if (limpia === "") return;
-    if (!habilidades.includes(limpia)) setHabilidades([...habilidades, limpia]);
+    // Si ya existe (aunque cambien mayúsculas o tildes), se marca la existente.
+    const existente = habilidadesVisibles.find((habilidad) => normalizar(habilidad) === normalizar(limpia));
+    const elegida = existente ?? limpia;
+    if (!habilidades.includes(elegida)) setHabilidades([...habilidades, elegida]);
     setHabilidadNueva("");
   }
 
@@ -132,7 +145,7 @@ export function FormularioConvocatoria() {
   return (
     <form onSubmit={publicar} className="flex flex-col gap-6" noValidate>
       <div>
-        <Button variant="ghost" size="sm" className="-ml-2" render={<Link href="/convocatorias" />}>
+        <Button variant="ghost" size="sm" className="-ml-2" nativeButton={false} render={<Link href="/convocatorias" />}>
           <ArrowLeft />
           Convocatorias
         </Button>
@@ -214,7 +227,11 @@ export function FormularioConvocatoria() {
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <div className="grid gap-4 sm:grid-cols-3">
-                <Campo etiqueta="Experiencia mínima (años)" id="experiencia">
+                <Campo
+                  etiqueta="Experiencia mínima (años)"
+                  id="experiencia"
+                  error={intentoEnviar && errores.experiencia ? "No puede ser negativa." : undefined}
+                >
                   <Input
                     id="experiencia"
                     type="number"
@@ -322,8 +339,19 @@ export function FormularioConvocatoria() {
 
           <Card>
             <CardContent className="flex flex-col gap-4">
-              <Campo etiqueta="Recibe postulaciones hasta" id="cierre">
-                <Input id="cierre" type="date" value={fechaCierre} onChange={(evento) => setFechaCierre(evento.target.value)} />
+              <Campo
+                etiqueta="Recibe postulaciones hasta"
+                id="cierre"
+                error={intentoEnviar && errores.cierre ? "Elija una fecha de hoy en adelante." : undefined}
+              >
+                <Input
+                  id="cierre"
+                  type="date"
+                  min={fechaDeHoy()}
+                  value={fechaCierre}
+                  onChange={(evento) => setFechaCierre(evento.target.value)}
+                  aria-invalid={(intentoEnviar && errores.cierre) || undefined}
+                />
               </Campo>
               <Button type="submit" className="w-full">
                 Publicar convocatoria

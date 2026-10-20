@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Briefcase, CalendarClock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ export function ListaVacantesPublicas() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" disabled>
+              <Button className="w-full" nativeButton={false} render={<Link href={`/postular/${convocatoria.id}`} />}>
                 Postular
               </Button>
             </CardFooter>

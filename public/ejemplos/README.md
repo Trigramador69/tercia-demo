@@ -1,9 +1,29 @@
-# Archivos de ejemplo para la conciliación
+# Archivos de ejemplo de la demo
 
-Reportes de asistencia de 2026-09 tal como los entregaría cada cliente (exportados de su biométrico).
-Se suben en la pantalla de Asistencia durante la demo. Están generados con `npm run generar:ejemplos`; no editarlos a mano.
+Generados con `npm run generar:ejemplos`; no editarlos a mano. En la demo publicada se descargan desde
+`/ejemplos/...` o desde el botón **Archivos de ejemplo** del menú lateral.
 
-## Banco Horizonte
+## Currículums para la página de postulación
+
+Al subir uno de estos archivos en `/postular`, el formulario se completa solo con sus datos.
+Con cualquier otro archivo, la persona completa el formulario a mano.
+
+| Archivo | Persona | Pensado para |
+|---|---|---|
+| `curriculums/CV_Valeria_Rocha.pdf` | Valeria Rocha Antezana | Recepcionista para clínica (cumple el 100%) |
+| `curriculums/CV_Mario_Choque.pdf` | Mario Choque Limachi | Personal de limpieza para agencias bancarias (cumple el 86%) |
+| `curriculums/CV_Esteban_Vargas.pdf` | Esteban Vargas Coca | Conserje para edificio de oficinas (cumple el 100%) |
+
+Para mostrar que quien ya postuló antes reutiliza sus datos: en la postulación a
+**Recepcionista para clínica**, buscar el carnet **10751088 CB**
+(Ramiro Quispe Bustamante, cumple el 86%).
+
+## Reportes de asistencia para la conciliación
+
+Asistencia de 2026-09 tal como la entregaría cada cliente, exportada de su biométrico.
+Se suben en la pantalla de Asistencia.
+
+### Banco Horizonte
 
 Archivo: `reporte-biometrico-banco-horizonte-2026-09.csv` (347 filas).
 
@@ -20,7 +40,7 @@ Diferencias plantadas:
 | 24/09/2026 | Fernando Villarroel Ríos | En nuestro registro no vino (falta o permiso); el cliente tiene marcación ese día |
 | 29/09/2026 | Nelson Peredo López | El cliente no tiene marcación de salida |
 
-## Comercializadora Kantuta
+### Comercializadora Kantuta
 
 Archivo: `reporte-biometrico-comercializadora-kantuta-2026-09.csv` (179 filas).
 

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { LogoTercia } from "@/components/marca/logo-tercia";
 import { BotonReiniciarDemo } from "@/components/panel/boton-reiniciar-demo";
+import { DialogoArchivosEjemplo } from "@/components/panel/dialogo-archivos-ejemplo";
 import {
   Sidebar,
   SidebarContent,
@@ -74,6 +75,7 @@ export function BarraLateral() {
           <p className="font-medium text-foreground">Modo demostración</p>
           <p className="mt-1">Los datos son de ejemplo y los cambios se guardan en este navegador.</p>
           <BotonReiniciarDemo className="mt-3 w-full" />
+          <DialogoArchivosEjemplo className="mt-1 w-full" />
         </div>
       </SidebarFooter>
     </Sidebar>

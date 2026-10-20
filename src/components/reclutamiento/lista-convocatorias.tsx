@@ -34,7 +34,7 @@ export function ListaConvocatorias() {
         titulo="Convocatorias"
         descripcion="Vacantes abiertas a la vez, con sus requisitos, destino y postulantes."
         acciones={
-          <Button render={<Link href="/convocatorias/nueva" />}>
+          <Button nativeButton={false} render={<Link href="/convocatorias/nueva" />}>
             <Plus />
             Nueva convocatoria
           </Button>
@@ -62,7 +62,7 @@ export function ListaConvocatorias() {
             <Link
               key={convocatoria.id}
               href={`/convocatorias/${convocatoria.id}`}
-              className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Card className="h-full transition-colors group-hover:border-primary/40">
                 <CardHeader>

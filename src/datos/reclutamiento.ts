@@ -125,8 +125,8 @@ const puestosAfines: Record<Puesto, Puesto[]> = {
 };
 
 const cargosPorPuesto: Record<Puesto, string[]> = {
-  limpieza: ["Personal de limpieza", "Auxiliar de limpieza", "Encargada de limpieza"],
-  recepcion: ["Recepcionista", "Atención al cliente", "Cajera"],
+  limpieza: ["Personal de limpieza", "Auxiliar de limpieza", "Responsable de limpieza"],
+  recepcion: ["Recepcionista", "Atención al cliente", "Atención en caja"],
   conserje: ["Conserje", "Portero", "Encargado de mantenimiento"],
   seguridad: ["Guardia de seguridad", "Vigilante"],
   auxiliar_administrativo: ["Auxiliar contable", "Asistente administrativo", "Auxiliar de oficina"],
@@ -251,7 +251,7 @@ export function generarReclutamiento(aleatorio: Aleatorio, crearIdentidad: Crear
       experiencias: crearExperiencias(aleatorio, puesto, experienciaAnios),
       habilidades,
       turnosDisponibles,
-      archivoCurriculum: archivo.normalize("NFD").replace(/[̀-ͯ]/g, ""),
+      archivoCurriculum: archivo.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
       fechaRegistro,
     };
     postulantes.push(postulante);

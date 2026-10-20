@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Search, Send } from "lucide-react";
 import { EncabezadoPagina } from "@/components/panel/encabezado-pagina";
@@ -18,6 +19,7 @@ import type { Ciudad, NivelEstudios, Puesto } from "@/datos/tipos";
 import { useEstadoDemo } from "@/lib/demo/almacen";
 import { puestosDePostulante } from "@/lib/demo/consultas";
 import { formatearFecha, nombreCompleto, pluralizar } from "@/lib/formato";
+import { useFiltroUrl, useFiltroUrlTexto } from "@/lib/use-filtro-url";
 
 const opcionesPuesto: Record<Puesto | "todos", string> = { todos: "Todos los puestos", ...nombresPuesto };
 const opcionesCiudad: Record<Ciudad | "todas", string> = {
@@ -39,14 +41,22 @@ const opcionesEstudios: Record<NivelEstudios | "todos", string> = {
   licenciatura: "Licenciatura",
 };
 
+function claves<Clave extends string>(opciones: Record<Clave, string>) {
+  return Object.keys(opciones) as Clave[];
+}
+
 export function BasePostulantes() {
   const estado = useEstadoDemo();
   const router = useRouter();
-  const [busqueda, setBusqueda] = useState("");
-  const [puesto, setPuesto] = useState<Puesto | "todos">("todos");
-  const [ciudad, setCiudad] = useState<Ciudad | "todas">("todas");
-  const [experiencia, setExperiencia] = useState<keyof typeof opcionesExperiencia>("0");
-  const [estudios, setEstudios] = useState<NivelEstudios | "todos">("todos");
+  const [busqueda, setBusqueda] = useFiltroUrlTexto("buscar");
+  const [puesto, setPuesto] = useFiltroUrl<Puesto | "todos">("puesto", "todos", claves(opcionesPuesto));
+  const [ciudad, setCiudad] = useFiltroUrl<Ciudad | "todas">("ciudad", "todas", claves(opcionesCiudad));
+  const [experiencia, setExperiencia] = useFiltroUrl<keyof typeof opcionesExperiencia>(
+    "experiencia",
+    "0",
+    claves(opcionesExperiencia),
+  );
+  const [estudios, setEstudios] = useFiltroUrl<NivelEstudios | "todos">("estudios", "todos", claves(opcionesEstudios));
   const [seleccion, setSeleccion] = useState<string[]>([]);
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
 
@@ -166,7 +176,13 @@ export function BasePostulantes() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{nombreCompleto(postulante)}</span>
+                      <Link
+                        href={`/postulantes/${postulante.id}`}
+                        className="w-fit rounded-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={(evento) => evento.stopPropagation()}
+                      >
+                        {nombreCompleto(postulante)}
+                      </Link>
                       <span className="text-xs text-muted-foreground">{postulante.ciudad}</span>
                     </div>
                   </TableCell>

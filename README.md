@@ -23,17 +23,19 @@ Abre en http://localhost:3000. La página pública de postulación está en `/po
 | `src/components/` | Componentes de pantalla; `ui/` son los de shadcn/ui |
 | `src/app/(panel)/` | Panel de Recursos Humanos y Gerente |
 | `src/app/(publico)/postular/` | Lo que ve el postulante |
-| `ejemplos/` | Reportes de biométrico de ejemplo para subir en la conciliación |
-| `scripts/` | Script que genera los archivos de `ejemplos/` |
+| `public/ejemplos/` | Archivos que se suben durante la demo: currículums en PDF y reportes del biométrico. Su guía está en `public/ejemplos/README.md` |
+| `scripts/` | Script que genera los archivos de `public/ejemplos/` |
 
 ## Datos de ejemplo
 
-Se generan con un generador pseudoaleatorio de semilla fija (`src/datos/semilla.ts`), así que salen iguales en cada carga y coinciden con los reportes de `ejemplos/`. Si se cambia algo de los datos, hay que:
+Se generan con un generador pseudoaleatorio de semilla fija (`src/datos/semilla.ts`), así que salen iguales en cada carga y coinciden con los archivos de `public/ejemplos/`. Si se cambia algo de los datos, hay que:
 
-1. regenerar los reportes con `npm run generar:ejemplos`;
+1. regenerar los archivos de ejemplo con `npm run generar:ejemplos`;
 2. subir `versionEstadoDemo` en `src/datos/semilla.ts`, para que los navegadores descarten lo guardado.
 
 Los archivos de `src/datos/` y `src/lib/cumplimiento.ts` importan con extensión `.ts` porque también los ejecuta Node directamente desde el script.
+
+El autocompletado del currículum es determinista: la página de postulación reconoce por su nombre los currículums de `src/datos/curriculums.ts` (los mismos que se generan en PDF) y completa el formulario con sus datos.
 
 ## Notas de Next.js 16
 

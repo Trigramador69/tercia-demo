@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   CalendarClock,
@@ -52,10 +52,14 @@ import {
   sugeridosDeLaBase,
   type FilaPostulante,
 } from "@/lib/demo/consultas";
-import { formatearFecha, nombreCompleto, pluralizar } from "@/lib/formato";
+import { fechaDeHoy, formatearFecha, nombreCompleto, pluralizar } from "@/lib/formato";
+import { useFiltroUrl, useFiltroUrlBooleano, useFiltroUrlTexto } from "@/lib/use-filtro-url";
 
 type FiltroEstado = EstadoPostulacion | "todos";
 type Orden = "cumplimiento" | "recientes";
+type Vista = "postulantes" | "sugeridos";
+
+const valoresUmbral = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100"];
 
 const nombresOrden: Record<Orden, string> = {
   cumplimiento: "Mayor cumplimiento",
@@ -70,8 +74,11 @@ export function DetalleConvocatoria() {
   if (!convocatoria) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-sm text-muted-foreground">No se encontró la convocatoria.</p>
-        <Button variant="outline" render={<Link href="/convocatorias" />}>
+        <h1 className="font-heading text-lg font-semibold">No encontramos esta convocatoria</h1>
+        <p className="text-sm text-muted-foreground">
+          Puede que se haya creado durante la demo y que la demo se haya reiniciado después.
+        </p>
+        <Button variant="outline" nativeButton={false} render={<Link href="/convocatorias" />}>
           Volver a convocatorias
         </Button>
       </div>
@@ -83,11 +90,14 @@ export function DetalleConvocatoria() {
 
 function ContenidoConvocatoria({ convocatoria }: { convocatoria: Convocatoria }) {
   const estado = useEstadoDemo();
-  const [umbral, setUmbral] = useState(umbralCumplimientoPorDefecto);
+  const [textoUmbral, setTextoUmbral] = useFiltroUrl("umbral", String(umbralCumplimientoPorDefecto), valoresUmbral);
+  const umbral = Number(textoUmbral);
+  const [vista, setVista] = useFiltroUrl<Vista>("vista", "postulantes", ["postulantes", "sugeridos"]);
   const filas = postulantesDeConvocatoria(estado, convocatoria);
   const sugeridos = sugeridosDeLaBase(estado, convocatoria, umbral);
   const { requisitos } = convocatoria;
   const abierta = convocatoria.estado === "abierta";
+  const vistaVisible: Vista = abierta ? vista : "postulantes";
 
   function alternarEstadoConvocatoria() {
     cambiarEstadoConvocatoria(convocatoria.id, abierta ? "cerrada" : "abierta");
@@ -97,7 +107,7 @@ function ContenidoConvocatoria({ convocatoria }: { convocatoria: Convocatoria })
   return (
     <>
       <div>
-        <Button variant="ghost" size="sm" className="-ml-2" render={<Link href="/convocatorias" />}>
+        <Button variant="ghost" size="sm" className="-ml-2" nativeButton={false} render={<Link href="/convocatorias" />}>
           <ArrowLeft />
           Convocatorias
         </Button>
@@ -121,7 +131,7 @@ function ContenidoConvocatoria({ convocatoria }: { convocatoria: Convocatoria })
         acciones={
           <>
             {abierta && (
-              <Button variant="outline" render={<a href="/postular" target="_blank" rel="noopener" />}>
+              <Button variant="outline" nativeButton={false} render={<a href="/postular" target="_blank" rel="noopener" />}>
                 <ExternalLink />
                 Página pública
               </Button>
@@ -161,7 +171,7 @@ function ContenidoConvocatoria({ convocatoria }: { convocatoria: Convocatoria })
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="postulantes">
+      <Tabs value={vistaVisible} onValueChange={(valor) => setVista(valor as Vista)}>
         <TabsList>
           <TabsTrigger value="postulantes">Postulantes ({filas.length})</TabsTrigger>
           <TabsTrigger value="sugeridos" disabled={!abierta}>
@@ -169,7 +179,12 @@ function ContenidoConvocatoria({ convocatoria }: { convocatoria: Convocatoria })
           </TabsTrigger>
         </TabsList>
         <TabsContent value="postulantes" className="mt-4">
-          <TablaPostulantes convocatoria={convocatoria} filas={filas} umbral={umbral} alCambiarUmbral={setUmbral} />
+          <TablaPostulantes
+            convocatoria={convocatoria}
+            filas={filas}
+            umbral={umbral}
+            alCambiarUmbral={(valor) => setTextoUmbral(String(valor))}
+          />
         </TabsContent>
         <TabsContent value="sugeridos" className="mt-4">
           <TablaSugeridos convocatoria={convocatoria} sugeridos={sugeridos} umbral={umbral} />
@@ -203,11 +218,18 @@ function TablaPostulantes({
   alCambiarUmbral: (umbral: number) => void;
 }) {
   const router = useRouter();
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>("todos");
-  const [soloQueCumplen, setSoloQueCumplen] = useState(false);
-  const [orden, setOrden] = useState<Orden>("cumplimiento");
+  const [busqueda, setBusqueda] = useFiltroUrlTexto("buscar");
+  const [filtroEstado, setFiltroEstado] = useFiltroUrl<FiltroEstado>("estado", "todos", ["todos", ...estadosPostulacion]);
+  const [soloQueCumplen, setSoloQueCumplen] = useFiltroUrlBooleano("cumple");
+  const [orden, setOrden] = useFiltroUrl<Orden>("orden", "cumplimiento", ["cumplimiento", "recientes"]);
   const [seleccion, setSeleccion] = useState<string[]>([]);
+  // La ficha recibe los filtros actuales para que su botón "Volver" los conserve.
+  const filtrosActuales = useSearchParams().toString();
+  const enlaceFicha = (idPostulante: string) => {
+    const parametros = new URLSearchParams({ convocatoria: convocatoria.id });
+    if (filtrosActuales) parametros.set("filtros", filtrosActuales);
+    return `/postulantes/${idPostulante}?${parametros}`;
+  };
 
   const cantidadPorEstado = Object.fromEntries(
     estadosPostulacion.map((estadoPostulacion) => [
@@ -346,7 +368,7 @@ function TablaPostulantes({
                 key={fila.postulacion.id}
                 data-state={seleccion.includes(fila.postulacion.id) ? "selected" : undefined}
                 className="cursor-pointer"
-                onClick={() => router.push(`/postulantes/${fila.postulante.id}?convocatoria=${convocatoria.id}`)}
+                onClick={() => router.push(enlaceFicha(fila.postulante.id))}
               >
                 <TableCell className="pl-4" onClick={(evento) => evento.stopPropagation()}>
                   <Checkbox
@@ -358,7 +380,16 @@ function TablaPostulantes({
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="flex items-center gap-2 font-medium">
-                      {nombreCompleto(fila.postulante)}
+                      <Link
+                        href={enlaceFicha(fila.postulante.id)}
+                        className="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={(evento) => evento.stopPropagation()}
+                      >
+                        {nombreCompleto(fila.postulante)}
+                      </Link>
+                      {fila.postulacion.fecha === fechaDeHoy() && fila.postulacion.origen === "postulacion" && (
+                        <Badge className="bg-primary text-primary-foreground">Hoy</Badge>
+                      )}
                       {fila.postulacion.origen === "invitacion" && (
                         <Badge variant="outline" className="font-normal">
                           Invitado
@@ -450,7 +481,13 @@ function TablaSugeridos({
               <TableRow key={postulante.id} className="cursor-pointer" onClick={() => router.push(`/postulantes/${postulante.id}`)}>
                 <TableCell className="pl-4">
                   <div className="flex flex-col">
-                    <span className="font-medium">{nombreCompleto(postulante)}</span>
+                    <Link
+                      href={`/postulantes/${postulante.id}`}
+                      className="w-fit rounded-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={(evento) => evento.stopPropagation()}
+                    >
+                      {nombreCompleto(postulante)}
+                    </Link>
                     <span className="text-xs text-muted-foreground">{postulante.ciudad}</span>
                   </div>
                 </TableCell>

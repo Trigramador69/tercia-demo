@@ -18,7 +18,7 @@ import { actualizarEstado, useEstadoDemo } from "@/lib/demo/almacen";
 
 // Usuarios de ejemplo para cada rol. No hay inicio de sesión: el selector
 // muestra lo que ve cada uno.
-const usuarioPorRol: Record<Rol, { nombre: string; iniciales: string }> = {
+export const usuarioPorRol: Record<Rol, { nombre: string; iniciales: string }> = {
   recursos_humanos: { nombre: "Lucía Vargas", iniciales: "LV" },
   gerente: { nombre: "Andrés Salazar", iniciales: "AS" },
 };

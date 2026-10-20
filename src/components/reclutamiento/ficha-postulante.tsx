@@ -30,7 +30,9 @@ import { cn } from "@/lib/utils";
 
 export function FichaPostulante() {
   const { idPostulante } = useParams<{ idPostulante: string }>();
-  const idConvocatoriaOrigen = useSearchParams().get("convocatoria");
+  const parametros = useSearchParams();
+  const idConvocatoriaOrigen = parametros.get("convocatoria");
+  const filtrosDeOrigen = parametros.get("filtros");
   const estado = useEstadoDemo();
   const postulante = estado.postulantes.find((item) => item.id === idPostulante);
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
@@ -38,8 +40,11 @@ export function FichaPostulante() {
   if (!postulante) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-sm text-muted-foreground">No se encontró a la persona en la base.</p>
-        <Button variant="outline" render={<Link href="/postulantes" />}>
+        <h1 className="font-heading text-lg font-semibold">No encontramos a esta persona</h1>
+        <p className="text-sm text-muted-foreground">
+          Puede que se haya agregado durante la demo y que la demo se haya reiniciado después.
+        </p>
+        <Button variant="outline" nativeButton={false} render={<Link href="/postulantes" />}>
           Volver a la base de postulantes
         </Button>
       </div>
@@ -64,7 +69,15 @@ export function FichaPostulante() {
           variant="ghost"
           size="sm"
           className="-ml-2"
-          render={<Link href={convocatoriaOrigen ? `/convocatorias/${convocatoriaOrigen.id}` : "/postulantes"} />}
+          nativeButton={false} render={
+            <Link
+              href={
+                convocatoriaOrigen
+                  ? `/convocatorias/${convocatoriaOrigen.id}${filtrosDeOrigen ? `?${filtrosDeOrigen}` : ""}`
+                  : "/postulantes"
+              }
+            />
+          }
         >
           <ArrowLeft />
           {convocatoriaOrigen ? convocatoriaOrigen.titulo : "Base de postulantes"}

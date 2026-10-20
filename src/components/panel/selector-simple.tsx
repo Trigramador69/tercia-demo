@@ -13,6 +13,7 @@ export function SelectorSimple<Valor extends string>({
   className,
   id,
   invalido,
+  deshabilitado,
 }: {
   opciones: Record<Valor, string>;
   valor: Valor | "";
@@ -21,10 +22,12 @@ export function SelectorSimple<Valor extends string>({
   className?: string;
   id?: string;
   invalido?: boolean;
+  deshabilitado?: boolean;
 }) {
   return (
     <Select
       items={opciones}
+      disabled={deshabilitado}
       value={valor === "" ? null : valor}
       onValueChange={(nuevo) => {
         if (nuevo !== null) alCambiar(nuevo as Valor);

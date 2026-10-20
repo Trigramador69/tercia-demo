@@ -15,6 +15,12 @@ import type {
 // Clientes con asistencia cargada en la demo.
 export const clientesConAsistencia = ["cli-banco-horizonte", "cli-kantuta"];
 
+// Nombre del archivo de ejemplo con el reporte del cliente (en public/ejemplos).
+export function nombreArchivoReporte(nombreCliente: string, mes: string) {
+  const base = nombreCliente.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/\s+/g, "-");
+  return `reporte-biometrico-${base}-${mes}.csv`;
+}
+
 interface DatosAsistencia {
   personas: Persona[];
   asignaciones: Asignacion[];

@@ -1,5 +1,6 @@
 import type {
   Asignacion,
+  Cliente,
   Convocatoria,
   EstadoDemo,
   Postulacion,
@@ -148,6 +149,24 @@ export function destinoDeConvocatoria(estado: EstadoDemo, convocatoria: Convocat
   if (!cliente) return `Uso interno · ${convocatoria.requisitos.ciudad}`;
   if (!sucursal) return `${cliente.nombre} · Varias sucursales en ${convocatoria.requisitos.ciudad}`;
   return `${cliente.nombre} · ${sucursal.nombre}`;
+}
+
+export interface AsignacionDetallada {
+  asignacion: Asignacion;
+  sucursal: Sucursal | undefined;
+  cliente: Cliente | undefined;
+}
+
+// Asignaciones de una persona, de la actual a la más antigua, con su sucursal y cliente.
+export function historialDePersona(estado: EstadoDemo, idPersona: string): AsignacionDetallada[] {
+  return estado.asignaciones
+    .filter((asignacion) => asignacion.idPersona === idPersona)
+    .sort((a, b) => Number(b.hasta === null) - Number(a.hasta === null) || b.desde.localeCompare(a.desde))
+    .map((asignacion) => {
+      const sucursal = estado.sucursales.find((item) => item.id === asignacion.idSucursal);
+      const cliente = estado.clientes.find((item) => item.id === sucursal?.idCliente);
+      return { asignacion, sucursal, cliente };
+    });
 }
 
 export function nombreDeSucursalConCliente(estado: EstadoDemo, idSucursal: string) {

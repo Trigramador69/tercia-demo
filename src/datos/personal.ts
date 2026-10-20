@@ -44,9 +44,9 @@ const proporcionMujeresPorPuesto: Record<Puesto, number> = {
 const comentariosPorEstrellas: Record<number, string[]> = {
   5: [
     "Muy puntual y responsable. El cliente pidió que se quede de forma fija.",
-    "Excelente trato con el personal del cliente. Siempre dispuesta a apoyar.",
+    "Excelente trato con el personal del cliente. Siempre con disposición para apoyar.",
     "Destaca por su orden y cuidado. Ninguna observación en el periodo.",
-    "El cliente la felicitó por escrito. Ideal para clientes exigentes.",
+    "Recibió una felicitación escrita del cliente. Ideal para clientes exigentes.",
     "Resuelve sin que se lo pidan. Muy buena referencia del supervisor.",
   ],
   4: [
@@ -212,6 +212,7 @@ export function generarPersonal(aleatorio: Aleatorio, crearIdentidad: CrearIdent
     );
     const nivelBase = esBanco ? aleatorio.elegir([4, 5, 5]) : aleatorio.elegir([3, 4, 4, 5]);
     const cantidad = aleatorio.entero(1, Math.min(4, asignacionesDePersona.length + 2));
+    const comentariosUsados = new Set<string>();
 
     for (let indice = 0; indice < cantidad; indice++) {
       const asignacion = aleatorio.elegir(asignacionesDePersona);
@@ -220,12 +221,21 @@ export function generarPersonal(aleatorio: Aleatorio, crearIdentidad: CrearIdent
       const estrellas = Math.max(3, Math.min(5, nivelBase + aleatorio.elegir([-1, 0, 0, 0, 1])));
       const sucursal = sucursalesIniciales.find((item) => item.id === asignacion.idSucursal)!;
       const cliente = clientePorId.get(sucursal.idCliente)!;
+      // Sin repetir el mismo comentario en una persona. elegir() siempre usa un
+      // solo número aleatorio, así que esto no altera el resto de los datos.
+      const elegirComentario = (cantidadEstrellas: number) => {
+        const opciones = comentariosPorEstrellas[cantidadEstrellas];
+        const libres = opciones.filter((comentario) => !comentariosUsados.has(comentario));
+        const elegido = aleatorio.elegir(libres.length > 0 ? libres : opciones);
+        comentariosUsados.add(elegido);
+        return elegido;
+      };
       evaluaciones.push({
         id: `eva-${String(evaluaciones.length + 1).padStart(3, "0")}`,
         idPersona: persona.id,
         fecha: fecha < finAsignacion ? fecha : finAsignacion,
         estrellas,
-        comentario: aleatorio.elegir(comentariosPorEstrellas[estrellas]),
+        comentario: elegirComentario(estrellas),
         autor: aleatorio.probabilidad(0.5) ? `${cliente.contactoNombre}, ${cliente.nombre}` : `Supervisión de ${empresa.nombre}`,
         idCliente: cliente.id,
       });

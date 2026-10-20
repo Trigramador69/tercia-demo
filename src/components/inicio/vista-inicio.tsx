@@ -114,14 +114,16 @@ export function VistaInicio() {
                 return postulante && calcularCumplimiento(convocatoria.requisitos, postulante) >= umbralCumplimientoPorDefecto;
               }).length;
               const cliente = convocatoria.idCliente ? clientePorId.get(convocatoria.idCliente) : undefined;
-              return (
-                <Link
-                  key={convocatoria.id}
-                  href={puedeVerRuta(rol, "/convocatorias") ? `/convocatorias/${convocatoria.id}` : "/"}
-                  className="group/fila flex flex-col gap-2 py-3 outline-none first:pt-0 last:pb-0 focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                >
+              // El Gerente ve el resumen pero no entra a las convocatorias.
+              const enlazable = puedeVerRuta(rol, "/convocatorias");
+              const clasesFila =
+                "group/fila flex flex-col gap-2 py-3 outline-none first:pt-0 last:pb-0 focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center sm:justify-between sm:gap-4";
+              const contenido = (
+                <>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium group-hover/fila:underline sm:truncate">{convocatoria.titulo}</p>
+                    <p className={`text-sm font-medium sm:truncate ${enlazable ? "group-hover/fila:underline" : ""}`}>
+                      {convocatoria.titulo}
+                    </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {cliente?.nombre ?? "Uso interno"} · {pluralizar(convocatoria.cantidadPuestos, "puesto", "puestos")}
                     </p>
@@ -130,7 +132,16 @@ export function VistaInicio() {
                     <Badge variant="secondary">{pluralizar(postulaciones.length, "postulante", "postulantes")}</Badge>
                     <Badge className="bg-exito-suave text-exito">{aptos} cumplen</Badge>
                   </div>
+                </>
+              );
+              return enlazable ? (
+                <Link key={convocatoria.id} href={`/convocatorias/${convocatoria.id}`} className={clasesFila}>
+                  {contenido}
                 </Link>
+              ) : (
+                <div key={convocatoria.id} className={clasesFila}>
+                  {contenido}
+                </div>
               );
             })}
           </CardContent>
@@ -205,7 +216,7 @@ function Indicador({
   );
   if (!ruta) return contenido;
   return (
-    <Link href={ruta} className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <Link href={ruta} className="group min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
       {contenido}
     </Link>
   );

@@ -13,7 +13,7 @@ import { convocatoriasIniciales, generarReclutamiento } from "./reclutamiento.ts
 import type { EstadoDemo } from "./tipos.ts";
 
 // Cambiar esta versión descarta lo guardado en los navegadores y vuelve a la semilla.
-export const versionEstadoDemo = 2;
+export const versionEstadoDemo = 3;
 
 // Cada parte usa su propia semilla para que un cambio en una no altere las demás.
 const semillas = {
