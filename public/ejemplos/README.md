@@ -25,7 +25,7 @@ Se suben en la pantalla de Asistencia.
 
 ### Banco Horizonte
 
-Archivo: `reporte-biometrico-banco-horizonte-2026-09.csv` (347 filas).
+Archivos: `reporte-biometrico-banco-horizonte-2026-09.csv` o `reporte-biometrico-banco-horizonte-2026-09.xlsx` (mismo contenido, 347 filas).
 
 Diferencias plantadas:
 
@@ -42,7 +42,7 @@ Diferencias plantadas:
 
 ### Comercializadora Kantuta
 
-Archivo: `reporte-biometrico-comercializadora-kantuta-2026-09.csv` (179 filas).
+Archivos: `reporte-biometrico-comercializadora-kantuta-2026-09.csv` o `reporte-biometrico-comercializadora-kantuta-2026-09.xlsx` (mismo contenido, 179 filas).
 
 Diferencias plantadas:
 

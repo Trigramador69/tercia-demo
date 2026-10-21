@@ -54,18 +54,21 @@ export function DialogoArchivosEjemplo({ className }: { className?: string }) {
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-medium">Reportes de asistencia de los clientes ({formatearMes(mesAsistenciaDemo)})</h3>
           <ul className="flex flex-col divide-y rounded-lg border">
-            {clientesConAsistencia.map((idCliente) => {
+            {clientesConAsistencia.flatMap((idCliente) => {
               const nombreCliente = clientes.find((cliente) => cliente.id === idCliente)?.nombre ?? idCliente;
               const archivo = nombreArchivoReporte(nombreCliente, mesAsistenciaDemo);
-              return (
+              return [
+                { archivo: archivo.replace(/\.csv$/, ".xlsx"), formato: "Excel" },
+                { archivo, formato: "CSV" },
+              ].map(({ archivo: nombre, formato }) => (
                 <FilaArchivo
-                  key={idCliente}
+                  key={nombre}
                   icono={FileSpreadsheet}
-                  ruta={`/ejemplos/${archivo}`}
-                  nombre={archivo}
-                  detalle={`Biométrico de ${nombreCliente}, con diferencias para conciliar`}
+                  ruta={`/ejemplos/${nombre}`}
+                  nombre={nombre}
+                  detalle={`Biométrico de ${nombreCliente} en ${formato}, con diferencias para conciliar`}
                 />
-              );
+              ));
             })}
           </ul>
         </section>

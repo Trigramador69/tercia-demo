@@ -5,7 +5,8 @@
 //  - una guía (README.md) con qué muestra cada archivo.
 // Se ejecuta con: npm run generar:ejemplos
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readSheet } from "read-excel-file/node";
 import { join } from "node:path";
 import { nombreArchivoReporte, type TipoDiferenciaPlantada } from "../src/datos/asistencia.ts";
 import { mesAsistenciaDemo } from "../src/datos/catalogos.ts";
@@ -13,6 +14,7 @@ import { curriculumsEjemplo } from "../src/datos/curriculums.ts";
 import { convocatoriasIniciales } from "../src/datos/reclutamiento.ts";
 import { crearEstadoInicial, generarReportesDeEjemplo } from "../src/datos/semilla.ts";
 import { calcularCumplimiento } from "../src/lib/cumplimiento.ts";
+import writeXlsxFile from "write-excel-file/node";
 import { dibujarCurriculum } from "./curriculum-pdf.ts";
 
 const carpeta = join(import.meta.dirname, "..", "public", "ejemplos");
@@ -94,7 +96,26 @@ for (const reporte of generarReportesDeEjemplo()) {
   // La marca de orden de bytes hace que Excel abra el archivo con las tildes correctas.
   writeFileSync(join(carpeta, archivo), marcaDeOrdenDeBytes + [encabezado, ...filas].join("\r\n") + "\r\n", "utf8");
 
-  guia.push(`### ${reporte.cliente.nombre}`, "", `Archivo: \`${archivo}\` (${reporte.filas.length} filas).`, "", "Diferencias plantadas:", "");
+  // La misma información en Excel, como la exportan otros biométricos. El
+  // archivo lleva fechas internas, así que solo se reescribe si cambió el
+  // contenido; si no, cada generación dejaría un cambio en el repositorio.
+  const archivoExcel = archivo.replace(/\.csv$/, ".xlsx");
+  const rutaExcel = join(carpeta, archivoExcel);
+  const tabla = [encabezado.split(";"), ...filas.map((fila) => fila.split(";"))];
+  const anterior = existsSync(rutaExcel) ? await readSheet(readFileSync(rutaExcel)) : null;
+  if (JSON.stringify(anterior) !== JSON.stringify(tabla)) {
+    const anchos = [10, 13, 34, 26, 12, 9, 9].map((width) => ({ width }));
+    await writeXlsxFile(tabla, { columns: anchos }).toFile(rutaExcel);
+  }
+
+  guia.push(
+    `### ${reporte.cliente.nombre}`,
+    "",
+    `Archivos: \`${archivo}\` o \`${archivoExcel}\` (mismo contenido, ${reporte.filas.length} filas).`,
+    "",
+    "Diferencias plantadas:",
+    "",
+  );
   guia.push("| Fecha | Persona | Diferencia |", "|---|---|---|");
   for (const diferencia of [...reporte.diferencias].sort((a, b) => a.fecha.localeCompare(b.fecha))) {
     const minutos = diferencia.minutos ? ` (${diferencia.minutos > 0 ? "+" : ""}${diferencia.minutos} min)` : "";

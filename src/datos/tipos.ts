@@ -212,6 +212,16 @@ export interface ReporteCliente {
   filas: FilaReporteCliente[];
 }
 
+// Decisión de Recursos Humanos sobre un día en que los dos registros no
+// coinciden: qué registro se toma como válido para la planilla.
+export interface ResolucionConciliacion {
+  idCliente: string;
+  idPersona: string;
+  fecha: string;
+  registroValido: "propio" | "cliente";
+  fechaResolucion: string;
+}
+
 // --- Estado completo de la demo ---
 
 export interface EstadoDemo {
@@ -228,4 +238,5 @@ export interface EstadoDemo {
   postulaciones: Postulacion[];
   registrosAsistencia: RegistroAsistencia[];
   reportesCliente: ReporteCliente[];
+  resoluciones: ResolucionConciliacion[];
 }

@@ -10,6 +10,7 @@ import type {
   Sucursal,
   Turno,
 } from "@/datos/tipos";
+import { conciliar } from "@/lib/conciliacion";
 import { calcularCumplimiento } from "@/lib/cumplimiento";
 
 // Consultas derivadas del estado de la demo. Son funciones puras: las pantallas
@@ -167,6 +168,53 @@ export function historialDePersona(estado: EstadoDemo, idPersona: string): Asign
       const cliente = estado.clientes.find((item) => item.id === sucursal?.idCliente);
       return { asignacion, sucursal, cliente };
     });
+}
+
+export interface ResumenConciliacion {
+  coinciden: number;
+  noCoinciden: number;
+  conflictos: number;
+  resueltos: number;
+  porResolver: number;
+  total: number;
+}
+
+// Todo lo de asistencia de un cliente en un mes: personal con registro propio,
+// el reporte del cliente si ya se cargó y el cruce entre los dos.
+export function asistenciaDeCliente(estado: EstadoDemo, idCliente: string, mes: string) {
+  const sucursales = new Set(estado.sucursales.filter((sucursal) => sucursal.idCliente === idCliente).map((sucursal) => sucursal.id));
+  const registros = estado.registrosAsistencia.filter(
+    (registro) => sucursales.has(registro.idSucursal) && registro.fecha.startsWith(mes),
+  );
+  const idsPersonas = new Set(registros.map((registro) => registro.idPersona));
+  const personas = estado.personas
+    .filter((persona) => idsPersonas.has(persona.id))
+    .sort((a, b) => `${a.nombres} ${a.apellidos}`.localeCompare(`${b.nombres} ${b.apellidos}`, "es"));
+  const reporte = estado.reportesCliente.find((item) => item.idCliente === idCliente && item.mes === mes) ?? null;
+  const conciliacion = reporte
+    ? conciliar(
+        registros,
+        reporte.filas,
+        estado.personas,
+        estado.resoluciones.filter((resolucion) => resolucion.idCliente === idCliente),
+      )
+    : null;
+
+  let resumen: ResumenConciliacion | null = null;
+  if (conciliacion) {
+    const diferencias = conciliacion.dias.filter((dia) => dia.resultado !== "coincide");
+    const resueltos = diferencias.filter((dia) => dia.resolucion !== null).length;
+    resumen = {
+      coinciden: conciliacion.dias.length - diferencias.length,
+      noCoinciden: diferencias.filter((dia) => dia.resultado === "no_coincide").length,
+      conflictos: diferencias.filter((dia) => dia.resultado === "conflicto").length,
+      resueltos,
+      porResolver: diferencias.length - resueltos,
+      total: conciliacion.dias.length,
+    };
+  }
+
+  return { personas, registros, reporte, conciliacion, resumen };
 }
 
 export function nombreDeSucursalConCliente(estado: EstadoDemo, idSucursal: string) {

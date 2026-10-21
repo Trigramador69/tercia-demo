@@ -3,8 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { ArrowLeft, Building, CalendarPlus, Clock, MapPin, MessageSquarePlus, type LucideIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Building,
+  CalendarPlus,
+  Clock,
+  MapPin,
+  MessageSquarePlus,
+  UserRoundMinus,
+  UserRoundPlus,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
+import { DialogoAsignarPersona } from "@/components/clientes/dialogos-asignacion";
 import { SelectorSimple } from "@/components/panel/selector-simple";
 import { usuarioPorRol } from "@/components/panel/selector-rol";
 import { Estrellas, SelectorEstrellas } from "@/components/personal/estrellas";
@@ -32,7 +43,7 @@ import {
 } from "@/datos/catalogos";
 import { diferenciaEnDias } from "@/datos/fechas";
 import type { Persona, TipoAusencia } from "@/datos/tipos";
-import { agregarEvaluacion, registrarAusencia } from "@/lib/demo/acciones";
+import { agregarEvaluacion, finalizarAsignacion, registrarAusencia } from "@/lib/demo/acciones";
 import { useEstadoDemo } from "@/lib/demo/almacen";
 import { calificacionDePersona, historialDePersona } from "@/lib/demo/consultas";
 import {
@@ -81,6 +92,8 @@ function ContenidoFicha({ persona, enlaceVolver }: { persona: Persona; enlaceVol
   const estado = useEstadoDemo();
   const [dialogoEvaluacion, setDialogoEvaluacion] = useState(false);
   const [dialogoAusencia, setDialogoAusencia] = useState(false);
+  const [dialogoAsignar, setDialogoAsignar] = useState(false);
+  const puedeAsignar = estado.rol === "recursos_humanos";
 
   const historial = historialDePersona(estado, persona.id);
   const actual = historial.find((item) => item.asignacion.hasta === null);
@@ -94,6 +107,14 @@ function ContenidoFicha({ persona, enlaceVolver }: { persona: Persona; enlaceVol
     .filter((ausencia) => ausencia.idPersona === persona.id)
     .sort((a, b) => b.desde.localeCompare(a.desde));
   const esNuevoIngreso = diferenciaEnDias(persona.fechaIngreso, fechaDeHoy()) < diasNuevoIngreso;
+
+  function finalizar() {
+    const deshacer = finalizarAsignacion(persona.id);
+    toast.success(`Asignación finalizada. ${nombreCompleto(persona)} queda disponible.`, {
+      description: "La asignación pasó a su historial.",
+      action: { label: "Deshacer", onClick: deshacer },
+    });
+  }
 
   return (
     <>
@@ -163,6 +184,20 @@ function ContenidoFicha({ persona, enlaceVolver }: { persona: Persona; enlaceVol
           <Card className={cn(actual && "border-primary/30")}>
             <CardHeader>
               <CardTitle>Asignación actual</CardTitle>
+              {puedeAsignar && (
+                <CardAction className="flex gap-2">
+                  {actual && (
+                    <Button variant="ghost" size="sm" onClick={finalizar}>
+                      <UserRoundMinus />
+                      Finalizar
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => setDialogoAsignar(true)}>
+                    <UserRoundPlus />
+                    {actual ? "Cambiar" : "Asignar"}
+                  </Button>
+                </CardAction>
+              )}
             </CardHeader>
             <CardContent>
               {actual ? (
@@ -179,7 +214,11 @@ function ContenidoFicha({ persona, enlaceVolver }: { persona: Persona; enlaceVol
                   </DatoConIcono>
                   <DatoConIcono icono={MapPin} etiqueta="Desde">
                     <span className="font-medium">{formatearFecha(actual.asignacion.desde)}</span>
-                    <span className="text-muted-foreground">{formatearAntiguedad(actual.asignacion.desde)} en este cliente</span>
+                    <span className="text-muted-foreground">
+                      {actual.asignacion.desde >= fechaDeHoy()
+                        ? "Asignación nueva"
+                        : `${formatearAntiguedad(actual.asignacion.desde)} en este cliente`}
+                    </span>
                   </DatoConIcono>
                 </div>
               ) : (
@@ -315,6 +354,7 @@ function ContenidoFicha({ persona, enlaceVolver }: { persona: Persona; enlaceVol
         alCambiarAbierto={setDialogoEvaluacion}
       />
       <DialogoAusencia persona={persona} abierto={dialogoAusencia} alCambiarAbierto={setDialogoAusencia} />
+      <DialogoAsignarPersona persona={persona} abierto={dialogoAsignar} alCambiarAbierto={setDialogoAsignar} />
     </>
   );
 }

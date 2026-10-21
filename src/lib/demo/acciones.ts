@@ -1,6 +1,8 @@
 "use client";
 
+import { sumarDias } from "@/datos/fechas";
 import type {
+  Asignacion,
   Ausencia,
   Convocatoria,
   Evaluacion,
@@ -8,7 +10,12 @@ import type {
   EstadoPostulacion,
   Postulacion,
   Postulante,
+  Puesto,
+  ReporteCliente,
+  ResolucionConciliacion,
+  Turno,
 } from "@/datos/tipos";
+import { normalizarCarnet } from "@/lib/conciliacion";
 import { actualizarEstado, obtenerEstado } from "@/lib/demo/almacen";
 import { fechaDeHoy } from "@/lib/formato";
 
@@ -44,6 +51,74 @@ export function cambiarEstadoPostulaciones(idsPostulaciones: string[], nuevoEsta
   }));
 }
 
+// Cierra la asignación vigente de una persona. Si empezó hoy (por ejemplo, una
+// asignación hecha por error durante la demo), se elimina en lugar de cerrarse.
+function cerrarAsignacionVigente(asignaciones: Asignacion[], idPersona: string) {
+  const hoy = fechaDeHoy();
+  return asignaciones.flatMap((asignacion) => {
+    if (asignacion.idPersona !== idPersona || asignacion.hasta !== null) return [asignacion];
+    if (asignacion.desde >= hoy) return [];
+    return [{ ...asignacion, hasta: sumarDias(hoy, -1) }];
+  });
+}
+
+// Asigna a una persona a una sucursal desde hoy. Si ya estaba en otra, esa
+// asignación pasa a su historial.
+export function asignarPersona(datos: { idPersona: string; idSucursal: string; puesto: Puesto; turno: Turno }) {
+  const nueva: Asignacion = { ...datos, id: crearId("asg"), desde: fechaDeHoy(), hasta: null };
+  actualizarEstado((estado) => ({
+    ...estado,
+    asignaciones: [...cerrarAsignacionVigente(estado.asignaciones, datos.idPersona), nueva],
+  }));
+}
+
+// Cierra la asignación vigente de la persona y devuelve una función que lo deshace.
+export function finalizarAsignacion(idPersona: string) {
+  const anteriores = obtenerEstado().asignaciones;
+  actualizarEstado((estado) => ({ ...estado, asignaciones: cerrarAsignacionVigente(estado.asignaciones, idPersona) }));
+  return () => actualizarEstado((estado) => ({ ...estado, asignaciones: anteriores }));
+}
+
+// Guarda el reporte del cliente para un mes; si ya había uno, lo reemplaza.
+export function cargarReporteCliente(datos: Omit<ReporteCliente, "id" | "fechaCarga">) {
+  const reporte: ReporteCliente = { ...datos, id: crearId("rep"), fechaCarga: fechaDeHoy() };
+  actualizarEstado((estado) => ({
+    ...estado,
+    reportesCliente: [
+      ...estado.reportesCliente.filter((item) => !(item.idCliente === datos.idCliente && item.mes === datos.mes)),
+      reporte,
+    ],
+  }));
+}
+
+export function quitarReporteCliente(idCliente: string, mes: string) {
+  actualizarEstado((estado) => ({
+    ...estado,
+    reportesCliente: estado.reportesCliente.filter((item) => !(item.idCliente === idCliente && item.mes === mes)),
+    resoluciones: estado.resoluciones.filter((item) => !(item.idCliente === idCliente && item.fecha.startsWith(mes))),
+  }));
+}
+
+type DiaDeConciliacion = Pick<ResolucionConciliacion, "idCliente" | "idPersona" | "fecha">;
+
+function sinResolucionDelDia(resoluciones: ResolucionConciliacion[], dia: DiaDeConciliacion) {
+  return resoluciones.filter(
+    (item) => !(item.idCliente === dia.idCliente && item.idPersona === dia.idPersona && item.fecha === dia.fecha),
+  );
+}
+
+// Decide qué registro vale para un día en que el nuestro y el del cliente difieren.
+export function resolverDia(dia: DiaDeConciliacion, registroValido: ResolucionConciliacion["registroValido"]) {
+  actualizarEstado((estado) => ({
+    ...estado,
+    resoluciones: [...sinResolucionDelDia(estado.resoluciones, dia), { ...dia, registroValido, fechaResolucion: fechaDeHoy() }],
+  }));
+}
+
+export function deshacerResolucion(dia: DiaDeConciliacion) {
+  actualizarEstado((estado) => ({ ...estado, resoluciones: sinResolucionDelDia(estado.resoluciones, dia) }));
+}
+
 export function agregarEvaluacion(datos: Omit<Evaluacion, "id" | "fecha">) {
   const evaluacion: Evaluacion = { ...datos, id: crearId("eva"), fecha: fechaDeHoy() };
   actualizarEstado((estado) => ({ ...estado, evaluaciones: [evaluacion, ...estado.evaluaciones] }));
@@ -52,10 +127,6 @@ export function agregarEvaluacion(datos: Omit<Evaluacion, "id" | "fecha">) {
 export function registrarAusencia(datos: Omit<Ausencia, "id">) {
   const ausencia: Ausencia = { ...datos, id: crearId("aus") };
   actualizarEstado((estado) => ({ ...estado, ausencias: [...estado.ausencias, ausencia] }));
-}
-
-export function normalizarCarnet(carnet: string) {
-  return carnet.replace(/\s+/g, "").toUpperCase();
 }
 
 export type ResultadoPostulacion =

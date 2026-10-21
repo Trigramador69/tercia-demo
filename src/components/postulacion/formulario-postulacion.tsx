@@ -30,7 +30,8 @@ import {
 } from "@/datos/catalogos";
 import { buscarCurriculumEjemplo } from "@/datos/curriculums";
 import type { Ciudad, Convocatoria, ExperienciaLaboral, NivelEstudios, Postulante, Turno } from "@/datos/tipos";
-import { normalizarCarnet, registrarPostulacion } from "@/lib/demo/acciones";
+import { normalizarCarnet } from "@/lib/conciliacion";
+import { registrarPostulacion } from "@/lib/demo/acciones";
 import { useEstadoDemo } from "@/lib/demo/almacen";
 import { formatearFecha, formatearMesCorto, pluralizar } from "@/lib/formato";
 import { cn } from "@/lib/utils";

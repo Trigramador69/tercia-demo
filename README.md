@@ -37,6 +37,10 @@ Los archivos de `src/datos/` y `src/lib/cumplimiento.ts` importan con extensión
 
 El autocompletado del currículum es determinista: la página de postulación reconoce por su nombre los currículums de `src/datos/curriculums.ts` (los mismos que se generan en PDF) y completa el formulario con sus datos.
 
+## Despliegue
+
+En Vercel, importando el repositorio: detecta Next.js solo y no necesita variables de entorno ni base de datos. Cada `git push` a `main` vuelve a publicar la demo.
+
 ## Notas de Next.js 16
 
 - Cache Components está activado. Todo lo que depende de los datos de la demo se renderiza solo en el navegador, detrás de `<PuertaNavegador>` (`use(browser())`) dentro de un `<Suspense>`.
