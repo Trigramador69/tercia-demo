@@ -24,7 +24,7 @@ export function ListaClientes() {
         descripcion={`${pluralizar(activos.length, "cliente activo", "clientes activos")} · ${pluralizar(totalSucursales, "sucursal", "sucursales")} · ${general.asignados} de ${general.requeridos} puestos cubiertos (${porcentajeCobertura(general.asignados, general.requeridos)}%)`}
       />
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {activos.map((cliente) => {
           const cobertura = coberturaDeCliente(estado, cliente.id);
           const faltan = cobertura.requeridos - cobertura.asignados;
@@ -39,16 +39,20 @@ export function ListaClientes() {
               <Card className="h-full transition-colors group-hover:border-primary/40">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-marca-suave text-primary">
                         <Building className="size-5" />
                       </span>
-                      <div className="flex flex-col">
-                        <CardTitle>{cliente.nombre}</CardTitle>
+                      <div className="flex min-w-0 flex-col">
+                        <CardTitle className="truncate" title={cliente.nombre}>
+                          {cliente.nombre}
+                        </CardTitle>
                         <CardDescription>{cliente.rubro}</CardDescription>
                       </div>
                     </div>
-                    <InsigniaFaltantes faltan={faltan} />
+                    <span className="shrink-0">
+                      <InsigniaFaltantes faltan={faltan} />
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 text-sm">

@@ -200,7 +200,7 @@ function TarjetaPostulacion({
 
   return (
     <Card className={cn(destacada && "ring-2 ring-primary/40")}>
-      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <CardHeader className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <CardTitle className="flex flex-wrap items-center gap-2">
             <Link href={`/convocatorias/${convocatoria.id}`} className="hover:underline">

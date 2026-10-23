@@ -53,7 +53,7 @@ export function ListaConvocatorias() {
         <p className="py-12 text-center text-sm text-muted-foreground">No hay convocatorias en esta vista.</p>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
         {visibles.map((convocatoria) => {
           const filas = postulantesDeConvocatoria(estado, convocatoria);
           const cumplen = filas.filter((fila) => fila.cumplimiento >= umbralCumplimientoPorDefecto).length;

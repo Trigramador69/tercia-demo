@@ -59,7 +59,8 @@ type FiltroEstado = EstadoPostulacion | "todos";
 type Orden = "cumplimiento" | "recientes";
 type Vista = "postulantes" | "sugeridos";
 
-const valoresUmbral = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100"];
+// El umbral se puede escribir: cualquier entero de 0 a 100.
+const valoresUmbral = Array.from({ length: 101 }, (_, indice) => String(indice));
 
 const nombresOrden: Record<Orden, string> = {
   cumplimiento: "Mayor cumplimiento",
@@ -145,7 +146,7 @@ function ContenidoConvocatoria({ convocatoria }: { convocatoria: Convocatoria })
       />
 
       <Card>
-        <CardContent className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
           <Dato icono={Users} etiqueta="Puestos" valor={`${nombresPuesto[convocatoria.puesto]} · ${convocatoria.cantidadPuestos}`} />
           <Dato
             icono={GraduationCap}
@@ -283,8 +284,9 @@ function TablaPostulantes({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="relative lg:w-64">
+      {/* Los filtros se acomodan en dos líneas cuando no entran en una. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={busqueda}
@@ -294,23 +296,25 @@ function TablaPostulantes({
             className="pl-8"
           />
         </div>
-        <SelectorSimple opciones={opcionesEstado} valor={filtroEstado} alCambiar={setFiltroEstado} className="lg:w-56" />
-        <SelectorSimple opciones={nombresOrden} valor={orden} alCambiar={setOrden} className="lg:w-48" />
-        <div className="flex items-center gap-3 rounded-lg border px-3 py-1.5 lg:ml-auto">
+        <SelectorSimple opciones={opcionesEstado} valor={filtroEstado} alCambiar={setFiltroEstado} className="w-full sm:w-56" />
+        <SelectorSimple opciones={nombresOrden} valor={orden} alCambiar={setOrden} className="w-full sm:w-48" />
+        <div className="flex shrink-0 items-center gap-3 rounded-lg border px-3 py-1 lg:ml-auto">
           <label className="flex items-center gap-2 text-sm font-medium whitespace-nowrap">
-            <Checkbox checked={soloQueCumplen} onCheckedChange={(valor) => setSoloQueCumplen(valor === true)} />
+            <Checkbox
+              checked={soloQueCumplen}
+              onCheckedChange={(valor) => setSoloQueCumplen(valor === true)}
+              aria-label="Mostrar solo quienes cumplen el porcentaje mínimo"
+            />
             Cumple al menos
           </label>
-          <Slider
-            value={[umbral]}
-            onValueChange={(valor) => alCambiarUmbral(Array.isArray(valor) ? valor[0] : valor)}
-            min={10}
-            max={100}
-            step={10}
-            className="w-28"
-            aria-label="Porcentaje mínimo de cumplimiento"
+          <CampoUmbral
+            valor={umbral}
+            alCambiar={(valor) => {
+              alCambiarUmbral(valor);
+              // Mover el porcentaje es para filtrar: se activa el filtro si no lo estaba.
+              if (!soloQueCumplen) setSoloQueCumplen(true);
+            }}
           />
-          <span className="w-10 text-right text-sm font-semibold tabular-nums">{umbral}%</span>
         </div>
       </div>
 
@@ -423,6 +427,61 @@ function TablaPostulantes({
           </TableBody>
         </Table>
       </Card>
+    </div>
+  );
+}
+
+// Porcentaje mínimo de cumplimiento: se mueve con el control o se escribe.
+// Mientras se escribe, el texto vive en el campo; al salir, vuelve al valor válido.
+function CampoUmbral({ valor, alCambiar }: { valor: number; alCambiar: (valor: number) => void }) {
+  const [borrador, setBorrador] = useState<string | null>(null);
+
+  function escribir(texto: string) {
+    setBorrador(texto);
+    const numero = Number(texto);
+    if (texto.trim() !== "" && Number.isInteger(numero) && numero >= 0 && numero <= 100) alCambiar(numero);
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      {/* El control toma el ancho de su contenedor: este le da un ancho fijo que no se encoge. */}
+      <div className="w-32 shrink-0">
+        <Slider
+          value={[valor]}
+          onValueChange={(nuevo) => {
+            setBorrador(null);
+            alCambiar(Array.isArray(nuevo) ? nuevo[0] : nuevo);
+          }}
+          min={0}
+          max={100}
+          step={5}
+          aria-label="Porcentaje mínimo de cumplimiento"
+        />
+      </div>
+      <div className="relative">
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={100}
+          value={borrador ?? String(valor)}
+          onChange={(evento) => escribir(evento.target.value)}
+          onBlur={() => {
+            // Un valor fuera de rango (por ejemplo 150) se ajusta al límite más cercano.
+            const numero = Number(borrador);
+            if (borrador !== null && borrador.trim() !== "" && Number.isFinite(numero)) {
+              alCambiar(Math.min(100, Math.max(0, Math.round(numero))));
+            }
+            setBorrador(null);
+          }}
+          onKeyDown={(evento) => {
+            if (evento.key === "Enter") evento.currentTarget.blur();
+          }}
+          aria-label="Porcentaje mínimo de cumplimiento, de 0 a 100"
+          className="h-7 w-16 pr-6 text-right font-semibold tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+      </div>
     </div>
   );
 }

@@ -5,7 +5,7 @@ Recorrido completo de la demo antes del despliegue. Cada paso dice qué hacer y 
 **Importante:** los números esperados (cantidades, porcentajes, nombres) son los de la demo recién reiniciada y siguiendo las secciones en orden, porque cada sección cambia datos que usan las siguientes. Si te salteas algo o repites un paso, usa **Reiniciar demo** y retoma desde el inicio de esa sección; las secciones que necesitan empezar de cero lo indican.
 
 ---
-
+    
 ## 0. Preparación
 
 | # | Qué hacer | Qué debería verse | ✔ | Observaciones |
@@ -63,7 +63,7 @@ Empezar con **Reiniciar demo**.
 | 3.15 | Abrir la Página de postulación (menú) | No aparece Conserje | | |
 | 3.16 | Volver a Conserje → **Reabrir** | Vuelve a estar abierta y a aparecer en la página pública | | |
 
----
+--- 
 
 ## 4. Nueva convocatoria
 
